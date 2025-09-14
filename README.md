@@ -1,17 +1,61 @@
-# 🚀 Startup Map - Complete Setup Guide
+# 🚀 YC Startup Map - Interactive Visualization
 
-## ✅ Backend Server (Already Working!)
+Interactive visualization of **5,410 Y Combinator startups** using ML embeddings and UMAP dimensionality reduction.
 
-Your FastAPI server is running at `http://127.0.0.1:8000` with:
-- ✅ OpenAI embeddings (`text-embedding-3-large`)
-- ✅ 5410 startup embeddings loaded
-- ✅ HNSW index for fast similarity search
-- ✅ CORS enabled for frontend
+![Features](https://img.shields.io/badge/Startups-5410-blue) ![Status](https://img.shields.io/badge/Status-Active-green) ![Tech](https://img.shields.io/badge/Tech-ML%20%2B%20React-orange)
 
-**API Endpoints:**
-- `GET /points` - All startup points with coordinates
-- `GET /neighbors?id=0&k=10` - Find similar startups
-- `POST /locate` - Add new startup and get position
+## 🚀 Quick Start for New Users
+
+### 1. Clone and Install Dependencies
+```bash
+git clone https://github.com/Sami-ul/HackMIT-2025
+cd HackMIT-2025
+
+# Python dependencies (ML models)
+pip install -r requirements.txt
+
+# Node.js dependencies (frontend)
+npm install
+```
+
+### 2. Generate ML Model Files
+```bash
+# This creates large files excluded from git (~500MB total)
+python generate_models.py
+```
+*⏱️ First run: 5-10 minutes to process all startups*
+
+### 3. Start the Application
+```bash
+# Terminal 1: Backend API
+python working_server.py
+
+# Terminal 2: Frontend
+npm run dev
+```
+
+### 4. Open Browser
+Navigate to **http://localhost:3000**
+
+## 📁 Generated Files (Not in Git)
+
+Your peers will generate these locally using `generate_models.py`:
+
+| File | Size | Purpose |
+|------|------|---------|
+| `umap_model.joblib` | 234MB | UMAP model for 2D coordinates |
+| `fused.npy` | 140MB | Combined startup embeddings |
+| `text_embeddings.npy` | 63MB | Text embeddings for similarity |
+| `index_hnsw.bin` | 71MB | FAISS index for fast search |
+
+## ✨ Features
+
+- **5,410 YC startups** as interactive nodes
+- **Company names** when zoomed in
+- **Status colors**: Active (green), Acquired (blue), Inactive (gray)  
+- **Interactive tooltips** with details and logos
+- **Search and filtering** by name/tags
+- **ML-powered positioning** using semantic similarity
 
 ## 🎨 Frontend Setup
 
