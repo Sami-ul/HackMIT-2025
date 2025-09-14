@@ -1,0 +1,22 @@
+
+# Complete dependencies for the YCombinator startup visualization
+# Core data processing
+pandas
+pyarrow
+numpy
+joblib
+
+# Machine learning and embeddings  
+sentence-transformers
+scikit-learn
+umap-learn
+hnswlib
+
+# API service
+openai
+fastapi
+uvicorn
+
+# For visualization pipeline (optional)
+# These are only needed if regenerating the data
+# The minimal_server.py can serve existing data without these heavy dependencies
