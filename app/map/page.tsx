@@ -72,8 +72,6 @@ export default function MapPage() {
   // Color schemes based on status
   const getStatusColor = (point: Point): [number, number, number, number] => {
     const status = point.status?.toLowerCase() || 'unknown';
-    // Debug first few points to check status values
-    if (Math.random() < 0.001) console.log('Point status:', point.name, point.status, status);
     switch (status) {
       case 'active':
         return [34, 197, 94, 255]; // Green
@@ -131,7 +129,6 @@ export default function MapPage() {
   // Optimized filtering with performance limits
   const displayPoints = useMemo(() => {
     let filtered = points;
-    console.log(`displayPoints calc: points=${points.length}, maxPoints=${maxPoints}, zoom=${zoom}`);
     
     // Text filter
     if (textFilter) {
@@ -152,7 +149,6 @@ export default function MapPage() {
     // Performance limit: show max points based on zoom level
     const limit = zoom > 3 ? maxPoints * 2 : maxPoints;
     const result = filtered.slice(0, limit);
-    console.log(`displayPoints result: ${result.length} out of ${filtered.length} filtered, limit=${limit}`);
     return result;
   }, [points, textFilter, selectedTags, maxPoints, zoom]);
   
@@ -422,36 +418,34 @@ export default function MapPage() {
     })
   );
 
-  // Skip TextLayer - it's not working in this setup. We'll use HTML overlay with proper coordinates.
-
-  // Company names layer - only when data is loaded and zoomed in
-  if (!loading && displayPoints.length > 0 && zoom > 0.5) {
-    // Always show at least 20 labels, more when zoomed in
-    const maxLabels = Math.max(20, Math.min(100, Math.floor(zoom * 50)));
-    const limitedPoints = displayPoints.slice(0, maxLabels);
-    
-    console.log(`Rendering ${limitedPoints.length} labels at zoom ${zoom}`);
+  // Company names layer - white text directly on top of each node
+  if (!loading && displayPoints.length > 0 && zoom > 1) {
+    // Show more labels when zoomed in, fewer when zoomed out
+    const maxLabels = Math.min(200, Math.max(30, Math.floor(zoom * 50)));
+    const visiblePoints = displayPoints.slice(0, maxLabels);
     
     layers.push(
       new TextLayer({
-        id: 'startup-labels',
-        data: limitedPoints,
-        getPosition: (d: Point) => [d.x, d.y, 3] as [number, number, number],
-        getText: (d: Point) => d.name || 'Unknown',
-        getSize: Math.max(8, Math.min(24, zoom * 4)), // Scale with zoom
+        id: 'startup-names',
+        data: visiblePoints,
+        getPosition: (d: Point) => [d.x, d.y, 1] as [number, number, number], // Same z-level as points
+        getText: (d: Point) => d.name || '',
+        getSize: Math.max(10, Math.min(18, zoom * 3)), // Responsive size
         getAngle: 0,
         getTextAnchor: 'middle' as any,
         getAlignmentBaseline: 'center' as any,
-        getColor: [255, 255, 255, 255], // Full opacity white
-        pickable: true,
-        onClick: handlePointClick as any,
-        onHover: (info: any) => setHoveredPoint(info.object || null),
+        getColor: [255, 255, 255, 255], // Pure white
+        pickable: false, // Don't interfere with point clicking
         fontFamily: 'Arial, sans-serif',
         fontWeight: 'bold',
-        outlineColor: [0, 0, 0, 255], // Full opacity black outline
-        outlineWidth: 2,
+        outlineColor: [0, 0, 0, 200], // Black outline for readability
+        outlineWidth: 1,
+        sizeScale: 1,
+        sizeMinPixels: 8,
+        sizeMaxPixels: 20,
         updateTriggers: {
-          data: [displayPoints.length, zoom] // Force update when zoom changes
+          getSize: [zoom],
+          data: [displayPoints.length, zoom]
         }
       })
     );
@@ -508,7 +502,6 @@ export default function MapPage() {
   const handleViewStateChange = useCallback(({viewState: newViewState}: any) => {
     // Round zoom to reduce update frequency
     const roundedZoom = Math.round(newViewState.zoom * 4) / 4; // Quarter-step rounding
-    console.log(`Zoom: ${roundedZoom}, displayPoints: ${displayPoints.length}`);
     setZoom(roundedZoom);
     setViewState(newViewState);
     return newViewState;
@@ -596,48 +589,15 @@ export default function MapPage() {
           style={{ position: 'absolute', width: '100%', height: '100%', cursor: 'grab' }}
         />
 
-        {/* HTML overlay for company names - positioned using viewport transformation */}
-        {zoom > 1.5 && !loading && displayPoints.length > 0 && (
-          <div className="absolute inset-0 pointer-events-none">
-            {displayPoints.slice(0, 30).map((point) => {
-              // Simple coordinate transformation based on viewport
-              // This is a rough approximation - adjust the scaling factors as needed
-              const scale = Math.pow(2, viewState.zoom - 1);
-              const screenX = (point.x - viewState.target[0]) * scale * 50 + window.innerWidth / 2;
-              const screenY = (point.y - viewState.target[1]) * scale * 50 + window.innerHeight / 2;
-              
-              // Only show labels that are on screen
-              if (screenX < -100 || screenX > window.innerWidth + 100 || 
-                  screenY < -100 || screenY > window.innerHeight + 100) {
-                return null;
-              }
-              
-              return (
-                <div
-                  key={point.id}
-                  className="absolute text-white font-bold pointer-events-none"
-                  style={{
-                    left: `${screenX}px`,
-                    top: `${screenY}px`,
-                    transform: 'translate(-50%, -50%)',
-                    fontSize: `${Math.max(10, Math.min(16, zoom * 2))}px`,
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-                    zIndex: 1000
-                  }}
-                >
-                  {point.name}
-                </div>
-              );
-            })}
-          </div>
-        )}
+
 
 
 
         {/* Performance Info */}
         <div className="absolute top-4 left-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded text-sm z-10">
           Showing {displayPoints.length} of {points.length} startups
-          {zoom < 3 && <div className="text-xs text-gray-300">Zoom in to see labels</div>}
+          {zoom <= 1 && <div className="text-xs text-gray-300">Zoom in to see company names</div>}
+          {zoom > 1 && <div className="text-xs text-green-300">Company names visible</div>}
         </div>
 
         {/* Visual Controls */}
