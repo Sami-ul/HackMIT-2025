@@ -33,7 +33,8 @@ def main():
         "one_liner": meta["one_liner"].fillna("").astype("string") if "one_liner" in meta.columns else "",
         "long_description": meta["long_description"].fillna("").astype("string") if "long_description" in meta.columns else "",
         "batch": meta["batch"].fillna("").astype("string") if "batch" in meta.columns else "",
-        "logo_url": meta["small_logo_thumb_url"].fillna("").astype("string") if "small_logo_thumb_url" in meta.columns else ""
+        "logo_url": meta["small_logo_thumb_url"].fillna("").astype("string") if "small_logo_thumb_url" in meta.columns else "",
+        "team_size": meta["team_size"].astype("float64") if "team_size" in meta.columns else None
     })
     points.to_parquet(os.path.join(args.out_dir, "points.parquet"))
     points.to_json(os.path.join(args.out_dir, "points.json"), orient="records")

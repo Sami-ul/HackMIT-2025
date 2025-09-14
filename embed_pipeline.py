@@ -207,7 +207,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", required=True, help="Path to YC-style JSON (list or NDJSON)")
     ap.add_argument("--out_dir", required=True)
-    ap.add_argument("--backend", choices=["hf", "openai"], default="hf")
+    ap.add_argument("--backend", choices=["hf", "openai"], default="openai")
     ap.add_argument("--model", default="intfloat/e5-large-v2",
                     help="HF model name (for --backend hf) or OpenAI embedding model name (for --backend openai)")
     ap.add_argument("--tag-weight", type=float, default=0.15, help="Relative magnitude of tag vector vs text")
